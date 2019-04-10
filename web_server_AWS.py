@@ -20,35 +20,23 @@ SPAM_BUCKET = ""
 
 
 def main_loop():
-    event_file_added = True
-    while True:
-        if event_file_added:
-            file = fetch_file()
-            print(file)
-            if file:
-                process_file(file)
-
-
-def fetch_file():
     my_bucket = s3_resource.Bucket('some/path/')
 
     for obj in my_bucket.objects.all():
-        print(obj)
+        print("Found object" + obj + "\nPossessing...")
         # find object key
         key = my_bucket.get_key(obj)
-
+        file = None  # file to save to
         try:
-            s3_resource.Bucket(MAIN_BUCKET).download_file(key, 'my_local_image.jpg')
+            s3_resource.Bucket(MAIN_BUCKET).download_file(key, file)
+            process_file(json.load(file), key)
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "404":
                 print("The object does not exist.")
             else:
                 raise
 
-    f = open("test.json", "r")
-    # f = open("test_fail.json", "r")
-    return json.load(f)
-    return key
+    print("Done with the server run")
 
 
 def send_file_to_spam(file_name):
@@ -69,7 +57,7 @@ def send_file_to_valid(file_name):
         print("ERROR")
 
 
-def process_file(file):
+def process_file(file, KEY):
     file_keys = file.keys()
 
     must_have_keys = {"_id",
@@ -82,16 +70,16 @@ def process_file(file):
                       "nuKvar_item_ID"}
 
     if must_have_keys - file_keys:
-        send_file_to_spam(file)
+        send_file_to_spam(KEY)
         return
 
     for key in must_have_keys:
         if key == "courier_ID" and not file[key].is_integer():
-            send_file_to_spam(file)
+            send_file_to_spam(KEY)
         if key == "nuKvar_item_ID" and not file[key].is_integer():
-            send_file_to_spam(file)
+            send_file_to_spam(KEY)
 
-    send_file_to_valid(file)
+    send_file_to_valid(KEY)
 
 
 def copy_to_bucket(bucket_from_name, bucket_to_name, file_name):
