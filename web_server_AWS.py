@@ -1,6 +1,8 @@
 import json
 import boto3
 import botocore
+import requests
+import tokens
 from boto3.session import Session
 
 aws_access_key_id = "YOUR_ACCESS_KEY_ID"
@@ -42,6 +44,7 @@ def main_loop():
 def send_file_to_spam(file_name):
     first_bucket_name = MAIN_BUCKET
     second_bucket_name = SPAM_BUCKET
+    corrupted_file_detected(None)
     try:
         copy_to_bucket(first_bucket_name, second_bucket_name, file_name)
     except:
@@ -91,4 +94,16 @@ def copy_to_bucket(bucket_from_name, bucket_to_name, file_name):
     s3_resource.Object(MAIN_BUCKET, file_name).delete()
 
 
+def corrupted_file_detected(file):
+    url = tokens.url_token
+    payload = {'text': 'Corrupted file detected in group-12'}
+    # POST with form-encoded data
+    print("Corrupted file detected in group-12")
+    r = requests.post(url, data=payload)
+
+
+
 main_loop()
+
+
+

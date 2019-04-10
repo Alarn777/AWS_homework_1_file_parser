@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 import tokens
 # from slackclient import SlackClient
@@ -17,9 +18,13 @@ import tokens
 
 def corrupted_file_detected(file):
     url = tokens.url_token
-    payload = {'text': 'Corrupted file detected in group-12'}
-    # POST with form-encoded data
-    r = requests.post(url, data=payload)
+    payload = {
+        "text": "Test 3:13",
+        "channel": "cloud-2019-group-12"
+    }
+    headers = {'content-type': 'application/json'}
+    response = requests.post(url, data=json.dumps(payload), headers=headers)
+    print(response.status_code)
 
 
 corrupted_file_detected(None)
